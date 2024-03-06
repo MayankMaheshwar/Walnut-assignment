@@ -6,7 +6,8 @@ from io import BytesIO
 import speech_recognition as sr
 
 from process2 import process_text
-
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -16,29 +17,8 @@ from database import User, Appointment, Availability
 # def before_first_request():
 #      db.create_all()
 
-def generate_voice():
-    url = "https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
 
-    payload = {
-        "model_id": "<string>",
-        "pronunciation_dictionary_locators": [
-            {
-                "pronunciation_dictionary_id": "<string>",
-                "version_id": "<string>"
-            }
-        ],
-        "text": "<string>",
-        "voice_settings": {
-            "similarity_boost": 123,
-            "stability": 123,
-            "style": 123,
-            "use_speaker_boost": True
-        }
-    }
-    headers = {"Content-Type": "application/json"}
 
-    response = requests.request("POST", url, json=payload, headers=headers)
-    return ""
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -174,7 +154,7 @@ def process_audio():
 
 
     # Convert response text to audio
-    tts_bytes = elevenlabs.generate(text=response_text, voice="Alice")
+    tts_bytes = elevenlabs.generate(api_key=os.getenv("ELEVEN_LABS_KEY"), text=response_text, voice="Alice")
 
     # Create a BytesIO object and write the audio data to it.
     audio_fp = BytesIO(tts_bytes)
