@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Patient Dashboard - Voice Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 80%;
+        }
+
+        .chatbox {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: #fff;
+            max-width: 75%;
+            display: inline-block;
+        }
+
+        .patient {
+            background-color: #007bff;
+            align-self: flex-end;
+        }
+
+        .assistant {
+            background-color: #666;
+            align-self: flex-start;
+        }
+
+        .controls {
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            background-color: #f7f7f7;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        .signout-btn {
+            padding: 10px 20px;
+            background-color: transparent;
+            color: #007bff;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .signout-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h2>Voice Chatbot</h2>
+        <div id="chatbox" class="chatbox">
+            <!-- Chat messages will be appended here -->
+        </div>
+        <div class="controls">
+            <button id="recordButton">Start Recording</button>
+            <button id="stopButton" disabled>Stop Recording</button>
+        </div>
+    </div>
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let chatbox = document.getElementById("chatbox");
+        let processingMessage = null;
+
+        document.getElementById("recordButton").addEventListener("click", function() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+
+                mediaRecorder.addEventListener("dataavailable", event => {
+                    audioChunks.push(event.data);
+                });
+
+                mediaRecorder.addEventListener("stop", () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp4' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audioMessage = new Audio(audioUrl);
+                    const messageElement = document.createElement("div");
+                    const userLabel = document.createElement("p");
+
+                    userLabel.textContent = "User:";
+                    userLabel.style.color = "blue";
+                    messageElement.classList.add("message", "patient");
+                    audioMessage.controls = true;
+                    messageElement.appendChild(userLabel);
+                    messageElement.appendChild(audioMessage);
+                    chatbox.appendChild(messageElement);
+
+                    // Show processing message
+                    processingMessage = document.createElement("p");
+                    processingMessage.textContent = "Please wait for the response...";
+                    processingMessage.style.color = "grey";
+                    chatbox.appendChild(processingMessage);
+
+                    const formData = new FormData();
+                    formData.append("audio", audioBlob);
+
+                    fetch("/process_audio", { method: "POST", body: formData })
+                    .then(response => response.blob()) // Handle response as a blob
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob); // Create an object URL from the blob
+
+                        if (processingMessage) {
+                            chatbox.removeChild(processingMessage);
+                            processingMessage = null;
+                        }
+
+                        // Create and append the assistant's audio message
+                        const replyElement = document.createElement("div");
+                        const assistantLabel = document.createElement("p");
+                        const replyAudio = new Audio(url);
+
+                        assistantLabel.textContent = "Assistant:";
+                        assistantLabel.style.color = "green";
+                        replyAudio.controls = true;
+                        replyElement.classList.add("message", "assistant");
+                        replyElement.appendChild(assistantLabel);
+                        replyElement.appendChild(replyAudio);
+                        chatbox.appendChild(replyElement);
+                    });
+
+                    audioChunks = [];
+                });
+
+                document.getElementById("recordButton").disabled = true;
+                document.getElementById("stopButton").disabled = false;
+            });
+        });
+
+        document.getElementById("stopButton").addEventListener("click", function() {
+            mediaRecorder.stop();
+            document.getElementById("recordButton").disabled = false;
+            document.getElementById("stopButton").disabled = true;
+        });
+    </script>
+
+    <form action="/signout" method="POST"> <!-- Form for sign-out -->
+        <button type="submit">Sign Out</button>
+    </form>
+</body>
+</html>
+
+   
+  
