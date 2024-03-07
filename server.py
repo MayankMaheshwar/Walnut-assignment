@@ -11,7 +11,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
-from database import User, Appointment, Availability
+from database import User, Appointment, Availability, db
+
 
 # @app.before_request
 # def before_first_request():

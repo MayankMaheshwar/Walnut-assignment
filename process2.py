@@ -18,12 +18,13 @@ toolkit = SQLDatabaseToolkit(db=input_db,llm=llm)
 # Create an agent executor
 agent_executor = create_sql_agent(
     llm=llm,
+    handle_parsing_errors=True,
     toolkit=toolkit,
     verbose=True
 )
 
 def process_text(question, user_id):
-    
+    result = ""
     try:
         if 'me' in question or 'my' in question:
             user_id_str = "patient_user_id -" + str(user_id)
@@ -35,7 +36,7 @@ def process_text(question, user_id):
         print(result,"result")
 
     except Exception as e:
-        result = "some exception occured as"+e+"please try again"
+        result = "something went wrong please try again"
         print(e,"exception")
     finally:
         return result
