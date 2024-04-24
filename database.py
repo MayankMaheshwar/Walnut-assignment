@@ -7,6 +7,8 @@ app.secret_key = 'your_secret_key'
 db = SQLAlchemy(app)
 
 
+
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fullname = db.Column(db.String(100))
@@ -29,3 +31,5 @@ class Appointment(db.Model):
     appointment_date = db.Column(db.Date, nullable=False)
     start_time = db.Column(db.String(5), nullable=False)
     end_time = db.Column(db.String(5), nullable=False)
+
+
