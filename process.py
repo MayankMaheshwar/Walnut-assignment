@@ -26,7 +26,7 @@
 
 
 #  # input_db = SQLDatabase.from_uri('sqlite:///users.db')
-#     # llm_1 = OpenAI(temperature=0,api_key="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")
+#     # llm_1 = OpenAI(temperature=0,api_key="")
 
 #     # db_agent = SQLDatabaseChain(llm = llm_1,
 #     #                             database = input_db,
