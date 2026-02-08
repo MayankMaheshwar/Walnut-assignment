@@ -29,4 +29,3 @@ class Appointment(db.Model):
     appointment_date = db.Column(db.Date, nullable=False)
     start_time = db.Column(db.String(5), nullable=False)
     end_time = db.Column(db.String(5), nullable=False)
-
